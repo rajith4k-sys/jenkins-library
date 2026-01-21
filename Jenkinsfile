@@ -2,16 +2,15 @@ pipeline {
     agent any
 
     tools {
-        maven 'maven3.9.12'  // use the Maven tool installed earlier 
-        jdk 'java17'        //  use JDK 17
+        maven 'maven3.9.12'
+        jdk 'java17'
     }
 
     stages {
 
         stage('Checkout') {
             steps {
-                // checkout the project from the 'project-1' branch in your Github repository
-                git branch: 'main', url: 'https://github.com/rajith4k-sys/jenkins-library.git'
+                git branch: 'main', url: 'https://github.com/srikanth78933/simple-java-app.git'
             }
         }
 
@@ -28,3 +27,4 @@ pipeline {
         }
     }
 }
+
