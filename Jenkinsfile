@@ -1,30 +1,59 @@
-@Library('my-shared-lib') _
 pipeline {
     agent any
 
     tools {
-        maven 'maven3.9.12' // Use the maven tool installed earlier 
-        jdk 'java17'       // Use JDK 17  
+        maven 'maven3.9.12'
+        jdk 'java17'
     }
 
     stages {
+
         stage('Checkout') {
             steps {
-                // checkout the project from the 'project-1'branch in your Github repository
-                git branch: 'main', url: 'https://github.com/rajith4k-sys/jenkins-library.git'
+                git branch: 'main',
+                    url: 'https://github.com/rajith4k-sys/jenkins-library.git'
             }
         }
+
         stage('Build') {
             steps {
-                mavenBuild()   // calling shared library function
+                sh 'mvn clean compile'
+            }
+        }
+
+        stage('Parallel Jobs') {
+            parallel {
+
+                stage('Unit Tests') {
+                    steps {
+                        sh 'mvn test'
+                    }
+                }
+
+                stage('SonarQube Scan') {
+                    steps {
+                        withSonarQubeEnv('sonarqube') {
+                            sh '''
+                                mvn verify sonar:sonar \
+                                -Dsonar.projectKey=simple-java \
+                                -Dsonar.projectName=simple-java
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Push to Nexus') {
+            steps {
+                sh 'mvn deploy -DskipTests'
             }
         }
 
         stage('Post-Build') {
             steps {
-                echo "Build completed successfully."
+                echo "Build, tests, Sonar scan, and Nexus deployment completed successfully ✅"
             }
         }
     }
 }
-
